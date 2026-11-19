@@ -452,3 +452,27 @@ $RECYCLE.BIN/
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json
+
+
+# Blazing Pizza - Local SQLite Databases
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
+
+# Build Output
+bin/
+obj/
+
+# Visual Studio and VS Code
+.vs/
+.vscode/
+
+# Temporary Files
+*.tmp
+*.log
+
+# User-Specific Settings
+*.user
+*.suo

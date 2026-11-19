@@ -1,0 +1,97 @@
+
+@page "/myorders/{OrderId:int}"
+@using BlazingPizza.Data
+@using System.Net.Http.Json
+@inject HttpClient HttpClient
+@inject NavigationManager NavigationManager
+
+<div class="container mt-4">
+    <h2 class="mb-4">Order Details</h2>
+
+    @if (isLoading)
+    {
+        <p>Loading order...</p>
+    }
+    else if (order == null)
+    {
+        <p>Order not found.</p>
+
+        <a href="/myorders" class="btn btn-primary">
+            Back to My Orders
+        </a>
+    }
+    else
+    {
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h3 class="mb-3">
+                    Order #@order.Order.OrderId
+                </h3>
+
+                <p>
+                    <strong>Status:</strong>
+                    @order.StatusText
+                </p>
+
+                <hr />
+
+                <h4 class="mb-3">Pizzas Ordered</h4>
+
+                @foreach (var pizza in order.Order.Pizzas)
+                {
+                    <div class="mb-3">
+                        <p>
+                            <strong>
+                                @pizza.Size" @pizza.Special.Name
+                            </strong>
+                        </p>
+
+                        <p>
+                            Price:
+                            $@pizza.GetFormattedTotalPrice()
+                        </p>
+                    </div>
+                }
+
+                <hr />
+
+                <a href="/myorders"
+                   class="btn btn-primary mt-3">
+                    Back to My Orders
+                </a>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public int OrderId { get; set; }
+
+    private OrderWithStatus? order;
+    private bool isLoading = true;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        isLoading = true;
+
+        try
+        {
+            var orders = await HttpClient.GetFromJsonAsync<
+                List<OrderWithStatus>>(
+                NavigationManager.BaseUri + "orders");
+
+            order = orders?.FirstOrDefault(
+                o => o.Order.OrderId == OrderId);
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine(ex);
+            order = null;
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+}

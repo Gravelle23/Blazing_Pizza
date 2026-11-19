@@ -1,6 +1,37 @@
+
 @inherits LayoutComponentBase
 
-<div class="content">
-    @Body
-</div>
+<div style="width: 100%; min-width: 0;">
 
+    <nav class="navbar navbar-expand navbar-dark bg-dark px-4"
+         style="width: 100%;">
+        <a class="navbar-brand" href="/">
+            Blazing Pizza
+        </a>
+
+        <div class="navbar-nav">
+            <NavLink class="nav-link"
+                     href="/"
+                     Match="NavLinkMatch.All">
+                Get Pizza
+            </NavLink>
+
+            <NavLink class="nav-link"
+                     href="/myorders">
+                My Orders
+            </NavLink>
+        </div>
+    </nav>
+
+    <main style="width: 100%; min-width: 0;">
+        @Body
+    </main>
+
+    <footer class="text-center py-3 border-top">
+        <p class="mb-0">© 2026 Blazing Pizza</p>
+        <p class="mb-0">
+            Aaron P. Gravelle | United States
+        </p>
+    </footer>
+
+</div>

@@ -1,4 +1,110 @@
-@page "/"
 
-<h1>Blazing Pizzas</h1>
-		
+@page "/"
+@using System.Net.Http.Json
+@using BlazingPizza.Services
+@using BlazingPizza.Shared
+@inject HttpClient HttpClient
+@inject NavigationManager NavigationManager
+@inject OrderState OrderState
+
+<div style="display: flex; width: 100%; align-items: stretch; gap: 0;">
+
+    <div class="main" style="flex: 1; min-width: 0;">
+        <h1>Blazing Pizzas</h1>
+
+        <ul class="pizza-cards">
+            @foreach (var special in specials)
+            {
+                <li @onclick="@(() => OrderState.ShowConfigurePizzaDialog(special))"
+                    style="background-image: url('@special.ImageUrl')">
+
+                    <div class="pizza-info">
+                        <span class="title">@special.Name</span>
+                        @special.Description
+
+                        <span class="price">
+                            @special.GetFormattedBasePrice()
+                        </span>
+                    </div>
+                </li>
+            }
+        </ul>
+    </div>
+
+    <div class="sidebar" style="width: 320px; flex-shrink: 0;">
+
+        @if (OrderState.Order.Pizzas.Any())
+        {
+            <div class="order-contents">
+                <h2>Your order</h2>
+
+                @foreach (var configuredPizza in OrderState.Order.Pizzas)
+                {
+                    <div class="cart-item">
+                        <div class="title">
+                            @configuredPizza.Size" @configuredPizza.Special.Name
+                        </div>
+
+                        <div class="item-price">
+                            $@configuredPizza.GetFormattedTotalPrice()
+                        </div>
+
+                        <button type="button"
+                                class="btn btn-sm btn-danger"
+                                @onclick="() => OrderState.RemoveConfiguredPizza(configuredPizza)">
+                            Remove
+                        </button>
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <div class="empty-cart">
+                Choose a pizza to get started
+            </div>
+        }
+
+        <div class="order-total">
+            Total:
+            <span class="total-price">
+                @OrderState.Order.GetFormattedTotalPrice()
+            </span>
+        </div>
+
+        @if (OrderState.Order.Pizzas.Any())
+        {
+            <div class="p-3">
+                <a href="/checkout" class="btn btn-warning w-100">
+                    Checkout
+                </a>
+            </div>
+        }
+
+    </div>
+</div>
+
+@if (OrderState.ShowingConfigureDialog)
+{
+    <ConfigurePizzaDialog
+        Pizza="OrderState.ConfiguringPizza"
+        OnCancel="OrderState.CancelConfigurePizzaDialog"
+        OnConfirm="ConfirmPizza" />
+}
+
+@code {
+    List<PizzaSpecial> specials = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        specials = await HttpClient.GetFromJsonAsync<List<PizzaSpecial>>(
+            NavigationManager.BaseUri + "specials"
+        ) ?? new();
+    }
+
+    private void ConfirmPizza()
+    {
+        OrderState.ConfirmConfigurePizzaDialog();
+        StateHasChanged();
+    }
+}

@@ -1,0 +1,80 @@
+
+@page "/myorders"
+@using System.Net.Http.Json
+@using BlazingPizza.Data
+@inject HttpClient HttpClient
+@inject NavigationManager NavigationManager
+
+<div class="main">
+    <div class="container">
+        <h2>My Orders</h2>
+
+        @if (isLoading)
+        {
+            <p>Loading your orders...</p>
+        }
+        else if (errorMessage != null)
+        {
+            <p class="text-danger">@errorMessage</p>
+        }
+        else if (orders == null || orders.Count == 0)
+        {
+            <p>You haven't placed any orders yet.</p>
+            <a href="/" class="btn btn-success">
+                Order Pizza
+            </a>
+        }
+        else
+        {
+            @foreach (var order in orders)
+            {
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <h4>Order #@order.Order.OrderId</h4>
+
+                        <p>
+                            <strong>Status:</strong>
+                            @order.StatusText
+                        </p>
+
+                        @foreach (var pizza in order.Order.Pizzas)
+                        {
+                            <p>
+                                @pizza.Size" @pizza.Special.Name
+                            </p>
+                            <a href="@($"/myorders/{order.Order.OrderId}")"
+                                class="btn btn-primary">
+                                Track Order
+                            </a>
+                        }
+                    </div>
+                </div>
+            }
+        }
+    </div>
+</div>
+
+@code {
+    private List<OrderWithStatus>? orders;
+    private bool isLoading = true;
+    private string? errorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            orders = await HttpClient.GetFromJsonAsync<
+                List<OrderWithStatus>>(
+                NavigationManager.BaseUri + "orders");
+        }
+        catch (Exception ex)
+        {
+            errorMessage = "Unable to load your orders.";
+            Console.Error.WriteLine(ex);
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+}
